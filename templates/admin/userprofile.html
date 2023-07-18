@@ -1,0 +1,182 @@
+{% extends 'base.html' %}
+{% block title %}Profile{%endblock%}
+
+{% block content %}
+    <div class="con">
+        <div class="header">
+            <div class="profile_box">
+                <h4 class="mt-2 mb-3">Профиль {{ user['username'] }}</h4>
+
+                <div class="profile_line">
+                        <div class="profile_left"><div class="text">UUID</div></div>
+                        <div class="profile_right"><div class="text">{{ user['uuid'] }}</div></div>
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Логин</div></div>
+                        <div class="profile_right"><div class="text">{{ user['username'] }}</div></div>
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Почта</div></div>
+                        <div class="profile_right"><div class="text">{{ user['email'] }}</div></div>
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Дата регистрации</div></div>
+                        <div class="profile_right"><div class="text" id="registerDate"></div></div>
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Группа</div></div>
+                        <div class="profile_right"><div class="text" id="rank"></div></div>
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">HWID</div></div>
+                        <div class="profile_right"><div class="text" id="hwid" onclick="updateHWID()">{{ user['hwid'] }}</div></div>
+                    </div>
+
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Куплен до</div></div>
+                        <input class="profile_input profile_right" type="date" id="updateBuyFor" name="name" style="border-radius: 0 15px 15px 0; position: relative" max="2050-12-31" required="required" value="" placeholder="Куплен до">
+                            <input onclick="updateBuyFor()" type="submit" class="button" style="min-width: 116px;
+                                                                   border-radius: 0 15px 15px 0px;
+                                                                   height: 40px;
+                                                                   padding: 0px;
+                                                                   position:absolute;
+                                                                   right: 0"
+                               name="submit" value="Обновить">
+                    </div>
+
+                    <div class="profile_line">
+                        <div class="profile_left"><div class="text">Оперативная память</div></div>
+                        <input class="profile_input profile_right" type="number" id="updateMemory" name="name" style="border-radius: 0 15px 15px 0; position: relative" required="required" value="{{ user['max_mem'] }}" placeholder="Оперативная память">
+                            <input onclick="updateMemory()" type="submit" class="button" style="min-width: 116px;
+                                                                   border-radius: 0 15px 15px 0px;
+                                                                   height: 40px;
+                                                                   padding: 0px;
+                                                                   position:absolute;
+                                                                   right: 0"
+                               name="submit" value="Обновить">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        $(document).ready(function() {
+            const inp = document.getElementById("updateBuyFor");
+            const millis = {{ user['buy_for'] }}
+            const date = new Date();
+            date.setTime(millis)
+
+            if(millis !== 0)
+                inp.value = date.toISOString().split('T')[0];
+
+            date.setTime({{ user['register_time'] }})
+            let day = date.getUTCDate();
+            let month = date.getUTCMonth();
+            let year = date.getUTCFullYear();
+            let hours = date.getUTCHours();
+            let minutes = date.getUTCMinutes();
+
+            if (day < 10) {
+              day = "0" + day;
+            }
+            if (month < 10) {
+              month = "0" + month;
+            }
+            if (hours < 10) {
+              hours = "0" + hours;
+            }
+            if (minutes < 10) {
+              minutes = "0" + minutes;
+            }
+
+            document.getElementById('registerDate').innerText = day + "." + month + "." + year + " " + hours + ":" + minutes;
+        });
+
+        $(document).ready(function() {
+            setHwid()
+
+            let rank = {{ user['admin'] }}
+            if(rank === 0)
+                document.getElementById("rank").innerText = "Пользователь"
+            if(rank === 1)
+                document.getElementById("rank").innerText = "Администратор"
+        });
+
+        function setHwid() {
+            const hwid = "{{ user['hwid'] }}";
+            const element = document.getElementById("hwid")
+
+            if(hwid === "None")
+                element.innerText = "Неизвестен"
+            else element.innerText = hwid
+        }
+
+        function updateMemory()
+        {
+            $.ajax({
+              type: 'POST',
+              url: "/admin/profile/update",
+              data: {"memory": document.getElementById("updateMemory").value, "uuid":{{ user['uuid'] }}},
+              success: function (dat) {
+                dat = JSON.parse(dat)
+
+                if(dat.success) alert("Успешно изменено кол-во оперативной памяти")
+                else alert("Ошибка! " + dat.message)
+
+                console.log(dat)
+              },
+            });
+        }
+
+        function updateBuyFor()
+        {
+            $.ajax({
+              type: 'POST',
+              url: "/admin/profile/update",
+              data: {"buy_for": new Date(document.getElementById("updateBuyFor").value).getTime(), "uuid":{{ user['uuid'] }}},
+              success: function (dat) {
+                dat = JSON.parse(dat)
+
+                if(dat.success) alert("Успешно изменена дата окончания подписки")
+                else alert("Ошибка! " + dat.message)
+
+                console.log(dat)
+              },
+            });
+        }
+
+        function updateHWID()
+        {
+            let reset = confirm("Вы уверены что хотите сбросить хвид?")
+
+            if(reset === true)
+            {
+                $.ajax({
+                      type: 'POST',
+                      url: "/admin/profile/update",
+                      data: {"hwid": "None", "uuid":{{ user['uuid'] }}},
+                      success: function (dat) {
+                        dat = JSON.parse(dat)
+
+                        if(dat.success)
+                        {
+                            alert("Хвид успешно сброшен")
+                            document.getElementById("hwid").innerText = "Неизвестен"
+                        }
+                        else alert("Ошибка! " + dat.message)
+
+                        console.log(dat)
+                      },
+                });
+            }
+        }
+    </script>
+
+{% endblock %}

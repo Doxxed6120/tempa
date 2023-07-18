@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Profile{%endblock%}
+
+{% block content %}
+    <div class="con">
+        <div class="header">
+            <div class="profile_box">
+                <h4 class="mt-2 mb-3">Ваш профиль</h4>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">UUID</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.user()['uuid'] }}</div></div>
+                </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">Логин</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.user()['username'] }}</div></div>
+                </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">Почта</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.user()['email'] }}</div></div>
+                </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">Дата регистрации</div></div>
+                    <div class="profile_right"><div class="text" id="registerDate">{{ profile.getFormattedCreateTime() }}</div></div>
+                </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">Группа</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.getRank() }}</div></div>
+                </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">HWID</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.getHWID() }}</div></div>
+                </div>
+
+                 <div class="profile_line">
+                    <div class="profile_left"><div class="text">Куплен до</div></div>
+                    <div class="profile_right"><div class="text">{{ profile.buyFor() }}</div></div>
+
+                    <a href="/buy" class="button" style="min-width: 116px;
+                                                               border-radius: 0 15px 15px 0px;
+                                                               height: 40px;
+                                                               padding: 3px;
+                                                               position:absolute;
+                                                               right: 0;
+                                                               min-width: 115px">Продлить</a>
+                 </div>
+
+                <div class="profile_line">
+                    <div class="profile_left"><div class="text">Оперативная память</div></div>
+                    <input class="profile_input profile_right" type="number" id="updateMemory" name="name" style="border-radius: 0 15px 15px 0; position: relative" required="required" value="{{ profile.user()['max_mem'] }}" placeholder="Оперативная память">
+                        <input onclick="updateMemory()" type="submit" class="button" style="min-width: 116px;
+                                                               border-radius: 0 15px 15px 0px;
+                                                               height: 40px;
+                                                               padding: 0px;
+                                                               position:absolute;
+                                                               right: 0"
+                           name="submit" value="Сохранить">
+                </div>
+
+
+{#                <div class="profile_line">#}
+{#                    <div class="profile_left"><div class="text">Оперативная память</div></div>#}
+{#                    <div class="profile_right"><div class="text">{{ profile.getHWID() }}</div></div>#}
+{#                </div>#}
+
+                <div class="profile_buttons">
+                    {% if profile.canDownload() %}
+                        <div class="profile_button">
+                        <a href="/download/loader" class="button">Скачать лоадер</a>
+                    </div>
+                    {% endif %}
+
+                    <div class="profile_button">
+                        <a href="/logout" class="button">Выйти</a>
+                    </div>
+
+                    {% if profile.user()['admin'] == 1 %}
+                    <div class="profile_button">
+                        <a href="/admin" class="button">Админ панель</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateMemory()
+        {
+            $.ajax({
+              type: 'POST',
+              url: "/api/profile/memory",
+              data: {"memory": document.getElementById("updateMemory").value},
+              success: function (dat) {
+                dat = JSON.parse(dat)
+
+                if(dat.success) alert("Успешно изменено кол-во оперативной памяти")
+                else alert("Ошибка! " + dat.message)
+
+                console.log(dat)
+              },
+            });
+        }
+    </script>
+{% endblock %}

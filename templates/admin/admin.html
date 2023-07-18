@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Admin{%endblock%}
+
+
+{% block content %}
+    <div class="con">
+        <div class="header">
+            <div class="profile_box">
+                <h4 class="mt-2 mb-3">Админка диксида</h4>
+
+
+                <table style="margin: 0 auto; width: 100%;">
+                  <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Admin</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for row in users %}
+                    <tr>
+                        <td><a href="{{ url_for('admin_profile', uuid=row['uuid']) }}" class="link">{{ row['uuid'] }}</a></td>
+                        <td><a href="{{ url_for('admin_profile', uuid=row['uuid']) }}" class="link">{{ row['username'] }}</a></td>
+                        <td><a href="{{ url_for('admin_profile', uuid=row['uuid']) }}" class="link">{{ row['email'] }}</a></td>
+
+                        {% if row['admin'] == 0 %}
+                            <td>Нет</td>
+                        {% endif %}
+
+                        {% if row['admin'] == 1 %}
+                            <td>Да</td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+
+                <a class="button" href="{{ url_for('admin', page=current - 1) }}">Назад</a>
+                <a class="button" href="{{ url_for('admin', page=current + 1) }}">Вперед</a>
+            </div>
+        </div>
+    </div>
+{% endblock %}
